@@ -19,41 +19,6 @@ import UIKit
     - 以此类推
  */
 
-enum WaterfallStyle {
-    case vertical
-    case horizontal
-}
-
-protocol WaterfallLayoutDeleagte: NSObjectProtocol {
-    /// 获取高宽比
-    func waterfallLayoutItemSize(for indexPath: IndexPath, layout: WaterfallLayout) -> CGSize
-    func waterfallLayoutFlowCount(with layout: WaterfallLayout) -> Int
-    
-    // optional
-    func waterfallLayoutStyle(with layout: WaterfallLayout) -> WaterfallStyle
-    func waterfallLayoutColumnMargin(with layout: WaterfallLayout) -> CGFloat
-    func waterfallLayoutRowMargin(with layout: WaterfallLayout) -> CGFloat
-    func waterfallLayoutEdgeInsets(with layout: WaterfallLayout) -> UIEdgeInsets
-}
-
-extension WaterfallLayoutDeleagte {
-    func waterfallLayoutStyle(with layout: WaterfallLayout) -> WaterfallStyle {
-        return .vertical
-    }
-    
-    func waterfallLayoutColumnMargin(with layout: WaterfallLayout) -> CGFloat {
-        return 10
-    }
-    
-    func waterfallLayoutRowMargin(with layout: WaterfallLayout) -> CGFloat {
-        return 10
-    }
-    
-    func waterfallLayoutEdgeInsets(with layout: WaterfallLayout) -> UIEdgeInsets {
-        return UIEdgeInsets(top: 10.0, left: 10.0, bottom: 10.0, right: 10.0)
-    }
-}
-
 class WaterfallLayout: UICollectionViewLayout {
     
     weak var delegate: WaterfallLayoutDeleagte?
@@ -80,6 +45,9 @@ class WaterfallLayout: UICollectionViewLayout {
     /// 四边距
     private lazy var edgeInsets = _delegate.waterfallLayoutEdgeInsets(with: self)
     
+    /// 瀑布宽度
+    private var waterfallWidth: CGFloat = 0.0
+    
     override func prepare() {
         super.prepare()
         guard let collectionView = collectionView else {
@@ -88,6 +56,8 @@ class WaterfallLayout: UICollectionViewLayout {
         // 清除缓存
         flowHeights = Array(repeating: edgeInsets.top, count: flowCount)
         attributesArray.removeAll()
+        // 根据风格处缓存用于计算的定值
+        prepareValueForCompute()
         // 创建新的布局属性
         for i in 0 ..< collectionView.numberOfItems(inSection: 0) {
             let indexPath = IndexPath(item: i, section: 0)
@@ -97,16 +67,58 @@ class WaterfallLayout: UICollectionViewLayout {
         }
     }
     
-    // 返回布局数组
+    /// 返回布局属性数组
     override func layoutAttributesForElements(in rect: CGRect) -> [UICollectionViewLayoutAttributes]? {
         return attributesArray
     }
     
-    // 返回每个 indexPath 对应的 cell 的布局属性
+    /// 返回每个 indexPath 对应的 cell 的布局属性
     override func layoutAttributesForItem(at indexPath: IndexPath) -> UICollectionViewLayoutAttributes? {
         let attributes = UICollectionViewLayoutAttributes(forCellWith: indexPath)
         attributes.frame = itemFrame(with: indexPath)
         return attributes
+    }
+    
+    /// contentSize
+    override var collectionViewContentSize: CGSize {
+        switch style {
+        case .vertical:
+            guard var maxColumnHeight = flowHeights.first else {
+                return .zero
+            }
+            flowHeights.forEach {
+                if maxColumnHeight < $0 {
+                    maxColumnHeight = $0
+                }
+            }
+            return CGSize(width: 0, height: maxColumnHeight + edgeInsets.bottom)
+        case .horizontal:
+            guard var maxRowWidth = flowHeights.first else {
+                return .zero
+            }
+            flowHeights.forEach {
+                if maxRowWidth < $0 {
+                    maxRowWidth = $0
+                }
+            }
+            return CGSize(width: maxRowWidth + edgeInsets.right, height: 0)
+        }
+    }
+}
+
+// MARK: - Helper
+private extension WaterfallLayout {
+    /// 计算需要缓存的定值
+    func prepareValueForCompute() {
+        guard let collectionView = collectionView else {
+            return
+        }
+        switch style {
+        case .vertical:
+            waterfallWidth = (collectionView.frame.width - edgeInsets.left - edgeInsets.right - (CGFloat(flowCount) - 1) * columnMargin) / CGFloat(flowCount)
+        case .horizontal:
+            waterfallWidth = (collectionView.frame.height - edgeInsets.top - edgeInsets.bottom - (CGFloat(flowCount) - 1) * rowMargin) / CGFloat(flowCount)
+        }
     }
     
     /// 计算 Item 的 Frame
@@ -121,19 +133,15 @@ class WaterfallLayout: UICollectionViewLayout {
     
     /// 计算垂直瀑布的Frame
     func verticalItemFrame(with indexPath: IndexPath) -> CGRect {
-        guard let collectionViewWidth = collectionView?.frame.width else {
-            return .zero
-        }
         // 布局的宽度和高度
-        #warning("width 应该计算一次就行了")
-        let width = (collectionViewWidth - edgeInsets.left - edgeInsets.right - (CGFloat(flowCount) - 1) * columnMargin) / CGFloat(flowCount)
+        let width = waterfallWidth
         let size = _delegate.waterfallLayoutItemSize(for: indexPath, layout: self)
         let aspectRatio = size.height / size.width
         let height = width * aspectRatio
         
         // 查找最短的一列索引和值
         var destColumn = 0
-        var minColumnHeight = flowHeights[0] //.first ?? edgeInsets.top
+        var minColumnHeight = flowHeights[0]
         for (i, v) in flowHeights.enumerated() {
             if v < minColumnHeight {
                 minColumnHeight = v
@@ -158,19 +166,15 @@ class WaterfallLayout: UICollectionViewLayout {
     
     /// 计算水平瀑布的Frame
     func horizontalItemFrame(with indexPath: IndexPath) -> CGRect {
-        guard let collectionViewHeight = collectionView?.frame.height else {
-            return .zero
-        }
         // 布局的宽度和高度
-        #warning("height 应该计算一次就行了")
-        let height = (collectionViewHeight - edgeInsets.top - edgeInsets.bottom - (CGFloat(flowCount) - 1) * rowMargin) / CGFloat(flowCount)
+        let height = waterfallWidth
         let size = _delegate.waterfallLayoutItemSize(for: indexPath, layout: self)
         let aspectRatio = size.width / size.height
         let width = height * aspectRatio
         
         // 查找最短的一列索引和值
         var destRow = 0
-        var minRowWidth = flowHeights[0] //.first ?? edgeInsets.top
+        var minRowWidth = flowHeights[0]
         for (i, v) in flowHeights.enumerated() {
             if v < minRowWidth {
                 minRowWidth = v
@@ -191,31 +195,5 @@ class WaterfallLayout: UICollectionViewLayout {
         flowHeights[destRow] = rect.maxX
         
         return rect
-    }
-    
-    // contentSize
-    override var collectionViewContentSize: CGSize {
-        switch style {
-        case .vertical:
-            guard var maxColumnHeight = flowHeights.first else {
-                return .zero
-            }
-            flowHeights.forEach {
-                if maxColumnHeight < $0 {
-                    maxColumnHeight = $0
-                }
-            }
-            return CGSize(width: 0, height: maxColumnHeight + edgeInsets.bottom)
-        case .horizontal:
-            guard var maxRowWidth = flowHeights.first else {
-                return .zero
-            }
-            flowHeights.forEach {
-                if maxRowWidth < $0 {
-                    maxRowWidth = $0
-                }
-            }
-            return CGSize(width: maxRowWidth + edgeInsets.right, height: 0)
-        }
     }
 }
