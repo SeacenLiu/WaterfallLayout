@@ -28,6 +28,9 @@ protocol WaterfallLayoutDeleagte: NSObjectProtocol {
     func waterfallLayoutRowMargin(with layout: WaterfallLayout) -> CGFloat
     /// 获取四边距
     func waterfallLayoutEdgeInsets(with layout: WaterfallLayout) -> UIEdgeInsets
+    
+    func waterfallLayoutHeightForHeader(for indexPath: IndexPath, layout: WaterfallLayout) -> CGFloat
+    func waterfallLayoutHeightForFooter(for indexPath: IndexPath, layout: WaterfallLayout) -> CGFloat
 }
 
 extension WaterfallLayoutDeleagte {
@@ -45,5 +48,13 @@ extension WaterfallLayoutDeleagte {
     
     func waterfallLayoutEdgeInsets(with layout: WaterfallLayout) -> UIEdgeInsets {
         return UIEdgeInsets(top: 10.0, left: 10.0, bottom: 10.0, right: 10.0)
+    }
+    
+    func waterfallLayoutHeightForHeader(for indexPath: IndexPath, layout: WaterfallLayout) -> CGFloat {
+        return 0
+    }
+    
+    func waterfallLayoutHeightForFooter(for indexPath: IndexPath, layout: WaterfallLayout) -> CGFloat {
+        return 0
     }
 }

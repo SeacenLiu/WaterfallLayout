@@ -12,7 +12,7 @@ import UIKit
  * WaterfallLayout 用于 UICollectionView 的瀑布布局
  * 当前版本:
     - 必须设置 delegate (改成 dataSource ?)
-    - 没有头尾视图设置
+    - 很多属性是否需要直接通过属性来设计
  * 计算方法:
     - 使用数组缓存当前各水流长度
     - 在最短水流处添加新 Item
@@ -32,6 +32,10 @@ class WaterfallLayout: UICollectionViewLayout {
     
     /// 水流高度 垂直瀑布是列高度 水平瀑布是行高度
     private var flowHeights = [CGFloat]()
+    /// 水流宽度
+    private var flowWidth: CGFloat = 0.0
+    /// 瀑布宽度
+    private var waterfallWidth: CGFloat = 0.0
     /// 缓存布局属性数组
     private var attributesArray = [UICollectionViewLayoutAttributes]()
     /// 瀑布样式
@@ -45,9 +49,7 @@ class WaterfallLayout: UICollectionViewLayout {
     /// 四边距
     private lazy var edgeInsets = _delegate.waterfallLayoutEdgeInsets(with: self)
     
-    /// 瀑布宽度
-    private var waterfallWidth: CGFloat = 0.0
-    
+    /// 准备布局
     override func prepare() {
         super.prepare()
         guard let collectionView = collectionView else {
@@ -58,10 +60,28 @@ class WaterfallLayout: UICollectionViewLayout {
         attributesArray.removeAll()
         // 根据风格处缓存用于计算的定值
         prepareValueForCompute()
+        
         // 创建新的布局属性
-        for i in 0 ..< collectionView.numberOfItems(inSection: 0) {
-            let indexPath = IndexPath(item: i, section: 0)
-            if let attributes = layoutAttributesForItem(at: indexPath) {
+        for section in 0..<collectionView.numberOfSections {
+            // 创建头视图属性
+            if let attributes = layoutAttributesForSupplementaryView(
+                ofKind: UICollectionView.elementKindSectionHeader,
+                at: IndexPath(item: 0, section: section)) {
+                attributesArray.append(attributes)
+            }
+            
+            // 创建新的 item 视图属性
+            for item in 0 ..< collectionView.numberOfItems(inSection: section) {
+                let indexPath = IndexPath(item: item, section: section)
+                if let attributes = layoutAttributesForItem(at: indexPath) {
+                    attributesArray.append(attributes)
+                }
+            }
+            
+            // 创建脚视图属性
+            if let attributes = layoutAttributesForSupplementaryView(
+                ofKind: UICollectionView.elementKindSectionFooter,
+                at: IndexPath(item: 0, section: section)) {
                 attributesArray.append(attributes)
             }
         }
@@ -70,6 +90,18 @@ class WaterfallLayout: UICollectionViewLayout {
     /// 返回布局属性数组
     override func layoutAttributesForElements(in rect: CGRect) -> [UICollectionViewLayoutAttributes]? {
         return attributesArray
+    }
+    
+    /// 返回头尾布局属性
+    override func layoutAttributesForSupplementaryView(ofKind elementKind: String, at indexPath: IndexPath) -> UICollectionViewLayoutAttributes? {
+        let attributes = UICollectionViewLayoutAttributes(forSupplementaryViewOfKind: elementKind, with: indexPath)
+        switch style {
+        case .vertical:
+            attributes.frame = verticalSupplementaryViewFrame(ofKind: elementKind, at: indexPath)
+        case .horizontal:
+            attributes.frame = horizontalSupplementaryViewFrame(ofKind: elementKind, at: indexPath)
+        }
+        return attributes
     }
     
     /// 返回每个 indexPath 对应的 cell 的布局属性
@@ -115,9 +147,11 @@ private extension WaterfallLayout {
         }
         switch style {
         case .vertical:
-            waterfallWidth = (collectionView.frame.width - edgeInsets.left - edgeInsets.right - (CGFloat(flowCount) - 1) * columnMargin) / CGFloat(flowCount)
+            waterfallWidth = collectionView.frame.width - edgeInsets.left - edgeInsets.right
+            flowWidth = (waterfallWidth - (CGFloat(flowCount) - 1) * columnMargin) / CGFloat(flowCount)
         case .horizontal:
-            waterfallWidth = (collectionView.frame.height - edgeInsets.top - edgeInsets.bottom - (CGFloat(flowCount) - 1) * rowMargin) / CGFloat(flowCount)
+            waterfallWidth = collectionView.frame.height - edgeInsets.top - edgeInsets.bottom
+            flowWidth = (waterfallWidth - (CGFloat(flowCount) - 1) * rowMargin) / CGFloat(flowCount)
         }
     }
     
@@ -134,7 +168,7 @@ private extension WaterfallLayout {
     /// 计算垂直瀑布的Frame
     func verticalItemFrame(with indexPath: IndexPath) -> CGRect {
         // 布局的宽度和高度
-        let width = waterfallWidth
+        let width = flowWidth
         let size = _delegate.waterfallLayoutItemSize(for: indexPath, layout: self)
         let aspectRatio = size.height / size.width
         let height = width * aspectRatio
@@ -167,7 +201,7 @@ private extension WaterfallLayout {
     /// 计算水平瀑布的Frame
     func horizontalItemFrame(with indexPath: IndexPath) -> CGRect {
         // 布局的宽度和高度
-        let height = waterfallWidth
+        let height = flowWidth
         let size = _delegate.waterfallLayoutItemSize(for: indexPath, layout: self)
         let aspectRatio = size.width / size.height
         let width = height * aspectRatio
@@ -194,6 +228,50 @@ private extension WaterfallLayout {
         // 更新最短那列的高度
         flowHeights[destRow] = rect.maxX
         
+        return rect
+    }
+    
+    /// 计算竖直瀑布的 SupplementaryView 属性
+    func verticalSupplementaryViewFrame(ofKind elementKind: String,at indexPath: IndexPath) -> CGRect {
+        var y = flowHeights.sorted().last!
+        if y == 0 {
+            y += edgeInsets.top
+        }
+        let x = edgeInsets.left
+        let w = waterfallWidth
+        var h: CGFloat = 0
+        switch elementKind {
+        case UICollectionView.elementKindSectionHeader:
+            h = _delegate.waterfallLayoutHeightForHeader(for: indexPath, layout: self)
+        default:
+            h = _delegate.waterfallLayoutHeightForFooter(for: indexPath, layout: self)
+            y += rowMargin
+        }
+        let rect = CGRect(x: x, y: y, width: w, height: h)
+        // 对齐瀑布流长度
+        flowHeights = Array(repeating: rect.maxY, count: flowCount)
+        return rect
+    }
+    
+    /// 计算水平瀑布的 SupplementaryView 属性
+    func horizontalSupplementaryViewFrame(ofKind elementKind: String,at indexPath: IndexPath) -> CGRect {
+        var x = flowHeights.sorted().last!
+        if x == 0 {
+            x += edgeInsets.left
+        }
+        let y = edgeInsets.top
+        let h = waterfallWidth
+        var w: CGFloat = 0
+        switch elementKind {
+        case UICollectionView.elementKindSectionHeader:
+            w = _delegate.waterfallLayoutHeightForHeader(for: indexPath, layout: self)
+        default:
+            w = _delegate.waterfallLayoutHeightForFooter(for: indexPath, layout: self)
+            x += columnMargin
+        }
+        let rect = CGRect(x: x, y: y, width: w, height: h)
+        // 对齐瀑布流长度
+        flowHeights = Array(repeating: rect.maxX, count: flowCount)
         return rect
     }
 }
