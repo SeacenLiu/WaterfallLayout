@@ -21,7 +21,7 @@ enum WaterfallStyle {
     case horizontal
 }
 
-class WaterfallLayout: UICollectionViewLayout { 
+class WaterfallLayout: UICollectionViewLayout {
     
     var itemSize: ((IndexPath) -> CGSize) = { _ in
         return .zero
