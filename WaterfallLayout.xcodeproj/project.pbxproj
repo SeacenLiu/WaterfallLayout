@@ -11,9 +11,9 @@
 		1435CDD3214A97C400C262B0 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1435CDD2214A97C400C262B0 /* ViewController.swift */; };
 		1435CDD8214A97C500C262B0 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1435CDD7214A97C500C262B0 /* Assets.xcassets */; };
 		1435CDDB214A97C500C262B0 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 1435CDD9214A97C500C262B0 /* LaunchScreen.storyboard */; };
-		1435CDE5214A986B00C262B0 /* CommodityCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1435CDE2214A986B00C262B0 /* CommodityCell.swift */; };
+		1435CDE5214A986B00C262B0 /* ShowCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1435CDE2214A986B00C262B0 /* ShowCell.swift */; };
 		1435CDE6214A986B00C262B0 /* WaterfallLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1435CDE3214A986B00C262B0 /* WaterfallLayout.swift */; };
-		1435CDE7214A986B00C262B0 /* Commodity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1435CDE4214A986B00C262B0 /* Commodity.swift */; };
+		1435CDE7214A986B00C262B0 /* FModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1435CDE4214A986B00C262B0 /* FModel.swift */; };
 		1435CDE9214A98AC00C262B0 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 1435CDE8214A98AC00C262B0 /* Main.storyboard */; };
 		143F7847214BE9AA00C23D05 /* UIColor+Ex.swift in Sources */ = {isa = PBXBuildFile; fileRef = 143F7846214BE9AA00C23D05 /* UIColor+Ex.swift */; };
 /* End PBXBuildFile section */
@@ -25,9 +25,9 @@
 		1435CDD7214A97C500C262B0 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		1435CDDA214A97C500C262B0 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		1435CDDC214A97C500C262B0 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		1435CDE2214A986B00C262B0 /* CommodityCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CommodityCell.swift; sourceTree = "<group>"; };
+		1435CDE2214A986B00C262B0 /* ShowCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ShowCell.swift; sourceTree = "<group>"; };
 		1435CDE3214A986B00C262B0 /* WaterfallLayout.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WaterfallLayout.swift; sourceTree = "<group>"; };
-		1435CDE4214A986B00C262B0 /* Commodity.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Commodity.swift; sourceTree = "<group>"; };
+		1435CDE4214A986B00C262B0 /* FModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FModel.swift; sourceTree = "<group>"; };
 		1435CDE8214A98AC00C262B0 /* Main.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = Main.storyboard; sourceTree = "<group>"; };
 		143F7846214BE9AA00C23D05 /* UIColor+Ex.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UIColor+Ex.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -65,8 +65,8 @@
 				1435CDD0214A97C400C262B0 /* AppDelegate.swift */,
 				1435CDE3214A986B00C262B0 /* WaterfallLayout.swift */,
 				1435CDD2214A97C400C262B0 /* ViewController.swift */,
-				1435CDE2214A986B00C262B0 /* CommodityCell.swift */,
-				1435CDE4214A986B00C262B0 /* Commodity.swift */,
+				1435CDE2214A986B00C262B0 /* ShowCell.swift */,
+				1435CDE4214A986B00C262B0 /* FModel.swift */,
 				143F7846214BE9AA00C23D05 /* UIColor+Ex.swift */,
 				1435CDE8214A98AC00C262B0 /* Main.storyboard */,
 				1435CDD7214A97C500C262B0 /* Assets.xcassets */,
@@ -148,11 +148,11 @@
 			buildActionMask = 2147483647;
 			files = (
 				143F7847214BE9AA00C23D05 /* UIColor+Ex.swift in Sources */,
-				1435CDE7214A986B00C262B0 /* Commodity.swift in Sources */,
+				1435CDE7214A986B00C262B0 /* FModel.swift in Sources */,
 				1435CDE6214A986B00C262B0 /* WaterfallLayout.swift in Sources */,
 				1435CDD3214A97C400C262B0 /* ViewController.swift in Sources */,
 				1435CDD1214A97C400C262B0 /* AppDelegate.swift in Sources */,
-				1435CDE5214A986B00C262B0 /* CommodityCell.swift in Sources */,
+				1435CDE5214A986B00C262B0 /* ShowCell.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

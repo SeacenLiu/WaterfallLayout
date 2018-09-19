@@ -10,9 +10,7 @@ import UIKit
 
 /**
  * WaterfallLayout 用于 UICollectionView 的瀑布布局
- * 当前版本:
-    - 很多属性是否需要直接通过属性来设计
- * 计算方法:
+ * 计算方法: (看成一个瀑布)
     - 使用数组缓存当前各水流长度
     - 在最短水流处添加新 Item
     - 以此类推

@@ -1,5 +1,5 @@
 //
-//  CommodityCell.swift
+//  ShowCell.swift
 //  瀑布流
 //
 //  Created by SeacenLiu on 2018/9/11.
@@ -8,9 +8,9 @@
 
 import UIKit
 
-class CommodityCell: UICollectionViewCell {
+class ShowCell: UICollectionViewCell {
 
-    static let cellId = "commodity_cell"
+    static let cellId = "show_cell"
     
     override func awakeFromNib() {
         super.awakeFromNib()
