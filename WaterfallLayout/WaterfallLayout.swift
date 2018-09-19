@@ -11,7 +11,6 @@ import UIKit
 /**
  * WaterfallLayout 用于 UICollectionView 的瀑布布局
  * 当前版本:
-    - 必须设置 delegate (改成 dataSource ?)
     - 很多属性是否需要直接通过属性来设计
  * 计算方法:
     - 使用数组缓存当前各水流长度
@@ -19,15 +18,25 @@ import UIKit
     - 以此类推
  */
 
+enum WaterfallStyle {
+    case vertical
+    case horizontal
+}
+
 class WaterfallLayout: UICollectionViewLayout {
     
-    weak var delegate: WaterfallLayoutDeleagte?
+    var itemSize: ((IndexPath) -> CGSize) = { _ in
+        return .zero
+    }
     
-    var _delegate: WaterfallLayoutDeleagte {
-        guard let delegate = delegate else {
-            fatalError("必须设置 WaterfallLayoutDeleagte 协议")
-        }
-        return delegate
+    /// 通过 section 获取 header 高度
+    var headerHeight: (_ section: Int) -> CGFloat = { _ in
+        return 0
+    }
+    
+    /// 通过 section 获取 footer 高度
+    var footerHeight: (_ section: Int) -> CGFloat = { _ in
+        return 0
     }
     
     /// 水流高度 垂直瀑布是列高度 水平瀑布是行高度
@@ -39,15 +48,15 @@ class WaterfallLayout: UICollectionViewLayout {
     /// 缓存布局属性数组
     private var attributesArray = [UICollectionViewLayoutAttributes]()
     /// 瀑布样式
-    private lazy var style = _delegate.waterfallLayoutStyle(with: self)
+    var style: WaterfallStyle = .vertical
     /// 行间距
-    private lazy var rowMargin = _delegate.waterfallLayoutRowMargin(with: self)
+    var rowMargin: CGFloat = 10
     /// 列间距
-    private lazy var columnMargin = _delegate.waterfallLayoutColumnMargin(with: self)
+    var columnMargin: CGFloat = 10
     /// 列数
-    private lazy var flowCount = _delegate.waterfallLayoutFlowCount(with: self)
+    var flowCount: Int = 2
     /// 四边距
-    private lazy var edgeInsets = _delegate.waterfallLayoutEdgeInsets(with: self)
+    var edgeInsets = UIEdgeInsets(top: 10.0, left: 10.0, bottom: 10.0, right: 10.0)
     
     /// 准备布局
     override func prepare() {
@@ -169,7 +178,7 @@ private extension WaterfallLayout {
     func verticalItemFrame(with indexPath: IndexPath) -> CGRect {
         // 布局的宽度和高度
         let width = flowWidth
-        let size = _delegate.waterfallLayoutItemSize(for: indexPath, layout: self)
+        let size = itemSize(indexPath)
         let aspectRatio = size.height / size.width
         let height = width * aspectRatio
         
@@ -202,7 +211,7 @@ private extension WaterfallLayout {
     func horizontalItemFrame(with indexPath: IndexPath) -> CGRect {
         // 布局的宽度和高度
         let height = flowWidth
-        let size = _delegate.waterfallLayoutItemSize(for: indexPath, layout: self)
+        let size = itemSize(indexPath)
         let aspectRatio = size.width / size.height
         let width = height * aspectRatio
         
@@ -242,9 +251,9 @@ private extension WaterfallLayout {
         var h: CGFloat = 0
         switch elementKind {
         case UICollectionView.elementKindSectionHeader:
-            h = _delegate.waterfallLayoutHeightForHeader(for: indexPath, layout: self)
+            h = headerHeight(indexPath.section)
         default:
-            h = _delegate.waterfallLayoutHeightForFooter(for: indexPath, layout: self)
+            h = footerHeight(indexPath.section)
             y += rowMargin
         }
         let rect = CGRect(x: x, y: y, width: w, height: h)
@@ -264,9 +273,9 @@ private extension WaterfallLayout {
         var w: CGFloat = 0
         switch elementKind {
         case UICollectionView.elementKindSectionHeader:
-            w = _delegate.waterfallLayoutHeightForHeader(for: indexPath, layout: self)
+            w = headerHeight(indexPath.section)
         default:
-            w = _delegate.waterfallLayoutHeightForFooter(for: indexPath, layout: self)
+            w = footerHeight(indexPath.section)
             x += columnMargin
         }
         let rect = CGRect(x: x, y: y, width: w, height: h)

@@ -20,9 +20,17 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        /// 必须设置代理
         if let layout = collectionView.collectionViewLayout as? WaterfallLayout {
-            layout.delegate = self
+            layout.itemSize = { [unowned self] indexPath in
+                let model = self.commodities[indexPath.item]
+                return CGSize(width: model.w, height: model.h)
+            }
+            layout.headerHeight = { _ in
+                return 20
+            }
+            layout.footerHeight = { _ in
+                return 30
+            }
         }
         
         /// 注册
@@ -30,29 +38,6 @@ class ViewController: UIViewController {
         collectionView.register(UICollectionReusableView.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionFooter, withReuseIdentifier: ViewController.footerId)
     }
     
-}
-
-extension ViewController: WaterfallLayoutDeleagte {
-    func waterfallLayoutStyle(with layout: WaterfallLayout) -> WaterfallStyle {
-        return .vertical
-    }
-    
-    func waterfallLayoutItemSize(for indexPath: IndexPath, layout: WaterfallLayout) -> CGSize {
-        let model = commodities[indexPath.item]
-        return CGSize(width: model.w, height: model.h)
-    }
-    
-    func waterfallLayoutFlowCount(with layout: WaterfallLayout) -> Int {
-        return 2
-    }
-    
-    func waterfallLayoutHeightForHeader(for indexPath: IndexPath, layout: WaterfallLayout) -> CGFloat {
-        return 20
-    }
-    
-    func waterfallLayoutHeightForFooter(for indexPath: IndexPath, layout: WaterfallLayout) -> CGFloat {
-        return 30
-    }
 }
 
 extension ViewController: UICollectionViewDataSource {
